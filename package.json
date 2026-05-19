@@ -1,6 +1,6 @@
 {
   "name": "@p-vbordei/llm-stream-parser",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Parse Server-Sent Events streams from OpenAI / Anthropic / compatible LLM APIs. Incremental SSE parser plus provider-specific text extractors. Zero dependencies.",
   "keywords": [
     "llm",

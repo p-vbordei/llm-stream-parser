@@ -6,6 +6,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-19
+
+### Changed
+- Expanded README with Why, Recipes, Caveats sections (no code changes).
+
 ## [0.2.0] - 2026-05-19
 
 ### Added
