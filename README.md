@@ -5,7 +5,7 @@
 Parse Server-Sent Events streams from OpenAI, Anthropic, and compatible LLM APIs. Incremental, transport-agnostic, zero dependencies.
 
 ```ts
-import { streamText, iterateEvents } from "llm-stream-parser";
+import { streamText, iterateEvents } from "@p-vbordei/llm-stream-parser";
 
 // Easy: just text deltas, auto-detecting OpenAI vs Anthropic shape
 const res = await fetch(url, { method: "POST", body });
@@ -22,7 +22,7 @@ for await (const event of iterateEvents(res.body!)) {
 ## Install
 
 ```sh
-npm install llm-stream-parser
+npm install @p-vbordei/llm-stream-parser
 ```
 
 ## API
