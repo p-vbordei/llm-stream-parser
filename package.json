@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "prepublishOnly": "npm run build"
   },
-  "engines": { "node": ">=18" },
+  "engines": { "node": ">=20" },
   "author": { "name": "Vlad Bordei", "email": "bordeivlad@gmail.com", "url": "https://github.com/p-vbordei" },
   "license": "Apache-2.0",
   "repository": { "type": "git", "url": "https://github.com/p-vbordei/llm-stream-parser.git" },
