@@ -1,0 +1,21 @@
+name: Feature request
+description: A new capability you'd like.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can't you do today, or what's painful?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: |
+        Optional. Sketch of API or behavior — not binding, the maintainer may pick a different shape.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered

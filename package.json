@@ -1,6 +1,6 @@
 {
   "name": "@p-vbordei/llm-stream-parser",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Parse Server-Sent Events streams from OpenAI / Anthropic / compatible LLM APIs. Incremental SSE parser plus provider-specific text extractors. Zero dependencies.",
   "keywords": [
     "llm",
@@ -11,27 +11,39 @@
     "parser"
   ],
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run typecheck && npm run build",
+    "typecheck": "tsc --noEmit",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\""
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "npm": ">=8"
   },
   "author": {
     "name": "Vlad Bordei",
@@ -49,6 +61,14 @@
   "homepage": "https://github.com/p-vbordei/llm-stream-parser#readme",
   "devDependencies": {
     "typescript": "^5.5.0",
-    "vitest": "^2.0.0"
-  }
+    "vitest": "^2.0.0",
+    "tsup": "^8.0.0",
+    "@vitest/coverage-v8": "^2.1.9",
+    "prettier": "^3.3.0"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "module": "./dist/index.mjs"
 }

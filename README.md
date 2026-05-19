@@ -2,6 +2,10 @@
 
 [![ci](https://github.com/p-vbordei/llm-stream-parser/actions/workflows/ci.yml/badge.svg)](https://github.com/p-vbordei/llm-stream-parser/actions/workflows/ci.yml)
 
+[![npm](https://img.shields.io/npm/v/%40p-vbordei%2Fllm-stream-parser.svg)](https://www.npmjs.com/package/@p-vbordei/llm-stream-parser)
+[![downloads](https://img.shields.io/npm/dm/%40p-vbordei%2Fllm-stream-parser.svg)](https://www.npmjs.com/package/@p-vbordei/llm-stream-parser)
+[![bundle](https://img.shields.io/bundlejs/size/%40p-vbordei%2Fllm-stream-parser)](https://bundlejs.com/?q=%40p-vbordei%2Fllm-stream-parser)
+
 Parse Server-Sent Events streams from OpenAI, Anthropic, and compatible LLM APIs. Incremental, transport-agnostic, zero dependencies.
 
 ```ts
