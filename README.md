@@ -1,5 +1,7 @@
 # llm-stream-parser
 
+[![ci](https://github.com/p-vbordei/llm-stream-parser/actions/workflows/ci.yml/badge.svg)](https://github.com/p-vbordei/llm-stream-parser/actions/workflows/ci.yml)
+
 Parse Server-Sent Events streams from OpenAI, Anthropic, and compatible LLM APIs. Incremental, transport-agnostic, zero dependencies.
 
 ```ts
