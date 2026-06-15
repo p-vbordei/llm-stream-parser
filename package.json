@@ -1,7 +1,22 @@
 {
-  "name": "@p-vbordei/llm-stream-parser",
-  "version": "0.2.1",
-  "description": "Parse Server-Sent Events streams from OpenAI / Anthropic / compatible LLM APIs. Incremental SSE parser plus provider-specific text extractors. Zero dependencies.",
+  "name": "llm-stream-parser",
+  "version": "0.1.0",
+  "description": "Incrementally parse OpenAI / Anthropic / compatible LLM SSE streams into events and text deltas; parsers throw on malformed payloads",
+  "cube": { "family": "lib" },
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "Vlad Bordei <vlad@vollko.com>",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
   "keywords": [
     "llm",
     "sse",
@@ -10,65 +25,9 @@
     "anthropic",
     "parser"
   ],
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "prepublishOnly": "npm run typecheck && npm run build",
-    "typecheck": "tsc --noEmit",
-    "test:coverage": "vitest run --coverage",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\""
-  },
-  "engines": {
-    "node": ">=20",
-    "npm": ">=8"
-  },
-  "author": {
-    "name": "Vlad Bordei",
-    "email": "bordeivlad@gmail.com",
-    "url": "https://github.com/p-vbordei"
-  },
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/p-vbordei/llm-stream-parser.git"
-  },
-  "bugs": {
-    "url": "https://github.com/p-vbordei/llm-stream-parser/issues"
-  },
-  "homepage": "https://github.com/p-vbordei/llm-stream-parser#readme",
   "devDependencies": {
-    "typescript": "^5.5.0",
-    "vitest": "^2.0.0",
-    "tsup": "^8.0.0",
-    "@vitest/coverage-v8": "^2.1.9",
-    "prettier": "^3.3.0"
-  },
-  "sideEffects": false,
-  "publishConfig": {
-    "access": "public"
-  },
-  "module": "./dist/index.mjs"
+    "@types/bun": "^1.1.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
 }

@@ -11,6 +11,11 @@ export interface SSEEvent {
  *
  * Implements the dispatch rules from the WHATWG/HTML5 Server-Sent Events spec
  * faithfully enough for OpenAI- and Anthropic-style streams.
+ *
+ * Incremental partials are **buffered**, not rejected: a chunk that does not
+ * yet complete an event (no blank-line separator) is held back and resolved
+ * when the rest arrives. Only fully-dispatched events leave the parser, so the
+ * payload extractors below can treat each event's `data` as a complete value.
  */
 export class SSEParser {
   private buffer = "";
@@ -98,46 +103,92 @@ async function* readableStreamToAsync<T>(stream: ReadableStream<T>): AsyncIterab
   }
 }
 
+/* ---- Errors ---- */
+
+/**
+ * Thrown when a fully-dispatched SSE event carries a `data:` payload that is
+ * supposed to be JSON but cannot be parsed.
+ *
+ * By the time an event reaches an extractor it has already been framed in full
+ * (the blank-line separator arrived, or the stream flushed at end-of-input), so
+ * its `data` is a *complete* value — invalid JSON here is a structural error,
+ * never an in-flight partial. Per the platform house rule, parsers throw on
+ * unparseable input rather than silently returning an empty result. A truncated
+ * stream therefore surfaces as this error: the final, half-emitted JSON delta
+ * fails to parse and is reported, not swallowed.
+ */
+export class SSEPayloadError extends Error {
+  /** The raw `data:` payload that failed to parse. */
+  readonly data: string;
+  constructor(message: string, data: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "SSEPayloadError";
+    this.data = data;
+  }
+}
+
+/**
+ * Parse an event's `data:` payload as JSON, throwing `SSEPayloadError` (never
+ * silently returning null) when it is not valid JSON. Callers must filter out
+ * non-JSON sentinels (e.g. OpenAI's terminal `[DONE]`) before calling this.
+ */
+function parsePayload(event: SSEEvent): unknown {
+  try {
+    return JSON.parse(event.data);
+  } catch (cause) {
+    throw new SSEPayloadError(
+      `Unparseable SSE data payload (not valid JSON): ${JSON.stringify(event.data.slice(0, 120))}`,
+      event.data,
+      { cause },
+    );
+  }
+}
+
 /* ---- Provider-specific extractors ---- */
 
 /**
  * Extract incremental text from an OpenAI-style chat completion stream event.
- * Returns `null` for non-text events and for the terminal `[DONE]` sentinel.
+ *
+ * Returns `null` for the terminal `[DONE]` sentinel and for well-formed events
+ * that carry no text (e.g. a role-only delta or a finish-reason chunk).
+ * **Throws** `SSEPayloadError` if the (non-sentinel) payload is not valid JSON —
+ * a fully-framed event with broken JSON is malformed, not an in-flight partial.
  */
 export function openAIText(event: SSEEvent): string | null {
   if (event.data === "[DONE]") return null;
-  try {
-    const j = JSON.parse(event.data);
-    const content = j?.choices?.[0]?.delta?.content;
-    return typeof content === "string" ? content : null;
-  } catch {
-    return null;
-  }
+  const j = parsePayload(event) as { choices?: Array<{ delta?: { content?: unknown } }> } | null;
+  const content = j?.choices?.[0]?.delta?.content;
+  return typeof content === "string" ? content : null;
 }
 
 /**
  * Extract incremental text from an Anthropic Messages API stream event.
  *
  * Returns the text payload of `content_block_delta` events whose delta is of
- * type `text_delta`. Returns `null` for control events and non-text deltas.
+ * type `text_delta`. Returns `null` for control events and non-text deltas
+ * (e.g. `input_json_delta` for tool-call arguments). **Throws**
+ * `SSEPayloadError` if a `content_block_delta` event carries invalid JSON.
  */
 export function anthropicText(event: SSEEvent): string | null {
   // Anthropic puts the event name in `event:`; data is JSON.
   if (event.event && event.event !== "content_block_delta") return null;
-  try {
-    const j = JSON.parse(event.data);
-    if (j?.type === "content_block_delta" && j?.delta?.type === "text_delta") {
-      return typeof j.delta.text === "string" ? j.delta.text : null;
-    }
-    return null;
-  } catch {
-    return null;
+  // Tolerate the OpenAI-style `[DONE]` terminator as a sentinel (not malformed
+  // JSON) so the combined `streamText` path can probe both shapes safely.
+  if (event.data === "[DONE]") return null;
+  const j = parsePayload(event) as
+    | { type?: string; delta?: { type?: string; text?: unknown } }
+    | null;
+  if (j?.type === "content_block_delta" && j?.delta?.type === "text_delta") {
+    return typeof j.delta.text === "string" ? j.delta.text : null;
   }
+  return null;
 }
 
 /**
- * High-level helper: yield only the text deltas from an LLM stream. Tries
- * Anthropic shape first, falls back to OpenAI. Skips control events silently.
+ * High-level helper: yield only the text deltas from an LLM stream. Tries the
+ * Anthropic shape first, falls back to the OpenAI shape, and skips control
+ * events. JSON-payload errors from the extractors propagate (a malformed or
+ * truncated delta throws `SSEPayloadError` rather than being silently dropped).
  */
 export async function* streamText(
   input: AsyncIterable<Uint8Array | string> | ReadableStream<Uint8Array>,
